@@ -1,0 +1,85 @@
+<html>
+<body>
+<canvas id="myCanvas" width="1000" height="1000" style="border:1px solid #c3c3c3;"></canvas>
+
+<script>
+    var colors = [
+        '#fff5eb',
+        '#fee6ce',
+        '#fdd0a2',
+        '#fdae6b',
+        '#fd8d3c',
+        '#f16913',
+        '#d94801',
+        '#a63603',
+        '#7f2704',
+    ];
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+
+    var draw_line = function(start, end) {
+        ctx.moveTo(start[0], start[1]);
+        ctx.lineTo(end[0], end[1]);
+    };
+
+    var Rectangle = function(top_left, bottom_right) {
+        var r = {
+            tl: top_left,
+            tr: [bottom_right[0], top_left[1]],
+            bl: [top_left[0], bottom_right[1]],
+            br: bottom_right,
+        };
+        r.draw = function(color) {
+            draw_line(r.tl, r.tr);
+            draw_line(r.tl, r.bl);
+            draw_line(r.bl, r.br);
+            draw_line(r.br, r.tr);
+        }
+        return r;
+    };
+
+    // Returns a random integer between min (included) and max (excluded)
+    // Using Math.round() will give you a non-uniform distribution!
+    function get_random_int_near_middle(min, max) {
+        var size = max - min;
+        var quarter = size / 5;
+        min = min + quarter;
+        max = max - quarter;
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    var draw_maze = function(r, depth) {
+        if (depth === 0) return;
+        depth--;
+
+        ctx.beginPath();
+        r.draw();
+        ctx.stroke();
+
+        var center_x = get_random_int_near_middle(r.tl[0], r.tr[0]);
+        var center_y = get_random_int_near_middle(r.bl[1], r.tl[1]);
+        draw_maze(Rectangle(
+            r.tl,
+            [center_x, center_y]
+        ), depth);
+        draw_maze(Rectangle(
+            [center_x, r.tl[1]],
+            [r.tr[0], center_y]
+        ), depth);
+        draw_maze(Rectangle(
+            [r.tl[0], center_y],
+            [center_x, r.bl[1]]
+        ), depth);
+        draw_maze(Rectangle(
+            [center_x, center_y],
+            r.br
+        ), depth);
+    };
+
+    draw_maze(Rectangle(
+        [0, 0],
+        [1000, 1000]
+    ), 10);
+</script>
+</body>
+</html>
